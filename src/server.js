@@ -6,7 +6,7 @@ const app = createApp();
 
 module.exports = app;
 
-if (process.env.VERCEL !== "1") {
+if (process.env.VERCEL !== "production") {
   const PORT = parseInt(process.env.PORT, 10) || 3000;
 
   const tryListen = (port) => {
