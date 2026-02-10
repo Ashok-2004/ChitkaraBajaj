@@ -17,23 +17,4 @@ const logger = winston.createLogger({
   ]
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  const fs = require('fs');
-  const path = require('path');
-
-  const logDir = 'logs';
-  if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir);
-  }
-
-  logger.add(new winston.transports.File({
-    filename: path.join(logDir, 'error.log'),
-    level: 'error'
-  }));
-
-  logger.add(new winston.transports.File({
-    filename: path.join(logDir, 'combined.log')
-  }));
-}
-
 module.exports = logger;
