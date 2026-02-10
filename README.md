@@ -351,8 +351,8 @@ This project is created for Chitkara University Qualifier 2026 - Bajaj Finserv P
 
 ## Deployment Information
 
-**GitHub Repository**: [Add your GitHub URL here after deployment]  
-**Deployed API**: [Add your Vercel URL here after deployment]  
+**GitHub Repository**: [https://github.com/Ashok-2004/ChitkaraBajaj.git]  
+**Deployed API**: [https://bfhl-api-fawn-ten.vercel.app]  
 **Candidate**: [Ashok Kumar Mishra]  
 **Email**: [ashok1130.be23@chitkarauniversity.edu.in]  
 **Date**: February 10, 2026  

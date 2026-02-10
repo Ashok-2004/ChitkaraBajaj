@@ -1,27 +1,42 @@
 const winston = require('winston');
 
+// Vercel-compatible logger (no file system access)
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.splat(),
     winston.format.json()
   ),
-  defaultMeta: { service: 'chitkara-qualifier-api' },
   transports: [
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' })
+    // Console transport only (works on Vercel)
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    })
   ]
 });
 
-// Console logging for development
+// Remove file transports in production/Vercel
 if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
+  // Only use file logging in local development
+  const fs = require('fs');
+  const path = require('path');
+  
+  const logDir = 'logs';
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
+  }
+
+  logger.add(new winston.transports.File({
+    filename: path.join(logDir, 'error.log'),
+    level: 'error'
+  }));
+
+  logger.add(new winston.transports.File({
+    filename: path.join(logDir, 'combined.log')
   }));
 }
 
