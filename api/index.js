@@ -1,2 +1,4 @@
-const app = require("../src/app");
-module.exports = app;
+require('dotenv').config();
+const createApp = require('../src/app');
+
+module.exports = createApp();

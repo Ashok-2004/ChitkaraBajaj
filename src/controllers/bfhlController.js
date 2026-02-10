@@ -4,21 +4,13 @@ const { sanitizeInput } = require('../utils/validation');
 const { APIError } = require('../middleware/errorHandler');
 const logger = require('../utils/logger');
 
-/**
- * Controller for /bfhl endpoint
- */
 class BFHLController {
   constructor() {
     this.aiService = new AIService();
   }
 
-  /**
-   * Main POST handler
-   */
   async handlePost(req, res) {
-    const requestBody = req.body;
-
-    // Validate that exactly one key is present
+    const requestBody = req.body || {};
     const keys = Object.keys(requestBody);
     const validKeys = ['fibonacci', 'prime', 'lcm', 'hcf', 'AI'];
     const receivedValidKeys = keys.filter(k => validKeys.includes(k));
@@ -34,7 +26,6 @@ class BFHLController {
     const operationKey = receivedValidKeys[0];
     const inputData = requestBody[operationKey];
 
-    // Route to appropriate handler
     let data;
     switch (operationKey) {
       case 'fibonacci':
@@ -54,78 +45,60 @@ class BFHLController {
         break;
     }
 
-    // Success response
     return res.status(200).json({
       is_success: true,
-      official_email: process.env.OFFICIAL_EMAIL,
+      official_email: process.env.OFFICIAL_EMAIL || "your_email@chitkara.edu.in",
       data
     });
   }
 
-  /**
-   * Handle Fibonacci operation
-   */
   handleFibonacci(input) {
-    if (!sanitizeInput.isValidInteger(input)) {
-      throw new APIError('Fibonacci input must be a positive integer (0-10000)', 400);
+    const parsed = sanitizeInput.parseInteger(input);
+    if (!parsed.valid) {
+      throw new APIError('fibonacci must be an integer between 0 and 1000', 400);
     }
-
-    logger.info(`Generating Fibonacci series for n=${input}`);
-    return MathService.generateFibonacci(input);
+    logger.info(`Generating Fibonacci series for n=${parsed.value}`);
+    return MathService.generateFibonacci(parsed.value);
   }
 
-  /**
-   * Handle Prime filtering operation
-   */
   handlePrime(input) {
-    if (!sanitizeInput.isValidIntegerArray(input)) {
+    const parsed = sanitizeInput.parseIntegerArray(input);
+    if (!parsed.valid) {
       throw new APIError('Prime input must be an array of positive integers (max 1000 elements, each ≤100000)', 400);
     }
-
-    logger.info(`Filtering primes from array of ${input.length} numbers`);
-    return MathService.filterPrimes(input);
+    logger.info(`Filtering primes from array of ${parsed.value.length} numbers`);
+    return MathService.filterPrimes(parsed.value);
   }
 
-  /**
-   * Handle LCM calculation
-   */
   handleLCM(input) {
-    if (!sanitizeInput.isValidIntegerArray(input)) {
+    const parsed = sanitizeInput.parseIntegerArray(input);
+    if (!parsed.valid) {
       throw new APIError('LCM input must be an array of positive integers (max 1000 elements, each ≤100000)', 400);
     }
-
-    logger.info(`Calculating LCM for array of ${input.length} numbers`);
-    return MathService.calculateLCM(input);
+    logger.info(`Calculating LCM for array of ${parsed.value.length} numbers`);
+    return MathService.calculateLCM(parsed.value);
   }
 
-  /**
-   * Handle HCF calculation
-   */
   handleHCF(input) {
-    if (!sanitizeInput.isValidIntegerArray(input)) {
+    const parsed = sanitizeInput.parseIntegerArray(input);
+    if (!parsed.valid) {
       throw new APIError('HCF input must be an array of positive integers (max 1000 elements, each ≤100000)', 400);
     }
-
-    logger.info(`Calculating HCF for array of ${input.length} numbers`);
-    return MathService.calculateHCF(input);
+    logger.info(`Calculating HCF for array of ${parsed.value.length} numbers`);
+    return MathService.calculateHCF(parsed.value);
   }
 
-  /**
-   * Handle AI question
-   */
   async handleAI(input) {
     if (!sanitizeInput.isValidQuestionString(input)) {
-      throw new APIError('AI input must be a non-empty string (max 500 characters)', 400);
+      throw new APIError('AI must be a string question', 400);
     }
 
-    logger.info(`Processing AI question: "${input.substring(0, 50)}..."`);
-    
     try {
       const answer = await this.aiService.getAnswer(input);
       return answer;
     } catch (error) {
-      logger.error('AI processing failed:', error);
-      throw new APIError('Failed to process AI request', 503);
+      logger.error('AI failed, returning fallback:', error);
+      return 'Unknown';
     }
   }
 }
